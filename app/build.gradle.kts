@@ -12,7 +12,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
+        manifestPlaceholders["MAPS_API_KEY"] = project.properties["MAPS_API_KEY"] as String
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -40,6 +40,7 @@ dependencies {
     implementation("com.airbnb.android:lottie:6.1.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation ("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
