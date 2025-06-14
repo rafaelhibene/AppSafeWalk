@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/tab_home"
+        android:icon="@drawable/ic_action_home"
+        android:title="Home" />
+
+    <item
+        android:id="@+id/tab_emergencia"
+        android:icon="@drawable/ic_action_emergencia"
+        android:title="Emergencia" />
+
+    <item
+        android:id="@+id/tab_perfil"
+        android:icon="@drawable/ic_action_perfil"
+        android:title="Perfil" />
+</menu>
