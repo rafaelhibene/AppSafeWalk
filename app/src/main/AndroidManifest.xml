@@ -18,8 +18,14 @@
         android:theme="@style/Theme.SafeWalk"
         tools:targetApi="31">
 
+        <!-- API Key do Google Maps (MapFragment) -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
+        <!-- API Key da Places API -->
+        <meta-data
+            android:name="com.google.android.libraries.places.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
         <activity
