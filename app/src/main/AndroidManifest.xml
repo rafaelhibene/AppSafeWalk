@@ -3,8 +3,11 @@
     package="com.rafaelhibene.safewalk"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permissão para acessar a internet -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Permissão para acessar a loc precisa do usuario -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Permissão para acessar a loc aproximada -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
@@ -18,16 +21,17 @@
         android:theme="@style/Theme.SafeWalk"
         tools:targetApi="31">
 
-        <!-- API Key do Google Maps (MapFragment) -->
+        <!-- API Key do Google Maps (Mapa da MainActivity) -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
-        <!-- API Key da Places API -->
+        <!-- API Key da Places API (Autocomplete da MainActivity) -->
         <meta-data
             android:name="com.google.android.libraries.places.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
+        <!-- Acticities -->
         <activity
             android:name=".CriarSenhaActivity"
             android:exported="false" />
@@ -36,8 +40,9 @@
             android:exported="false" />
         <activity
             android:name=".IntroActivity"
-            android:exported="true">
+            android:exported="true"> <!-- true pois é exportada -->
             <intent-filter>
+                <!-- Abrir o app nela -->
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -49,7 +54,7 @@
         <activity
             android:name=".EmergenciaActivity"
             android:exported="false"
-            android:windowSoftInputMode="stateHidden" />
+            android:windowSoftInputMode="stateHidden" /> <!-- Esconder o teclado inicialmente -->
         <activity
             android:name=".MainActivity"
             android:exported="false" />

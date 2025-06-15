@@ -64,7 +64,7 @@ public class EmergenciaActivity extends AppCompatActivity {
         // configura botão para enviar localização via WhatsApp
         btEnviarLocalizacao.setOnClickListener(v -> enviarLocalizacaoWhatsApp());
 
-        // configura navegação inferior e seleção das abas
+        // Menu
         bottomNavigationView.setSelectedItemId(R.id.tab_emergencia);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -87,6 +87,7 @@ public class EmergenciaActivity extends AppCompatActivity {
      * Requisita permissão de localização se necessário.
      */
     private void enviarLocalizacaoWhatsApp() {
+        // pega o contato de seguranca e guarda na variavel
         String contatoSeguranca = etNumero.getText().toString().trim();
 
         // verifica se o número do contato foi digitado
@@ -104,7 +105,7 @@ public class EmergenciaActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
         } else {
-            // já tem permissão: obtém última localização conhecida
+            // se ja tem permissao, obtem última localização conhecida
             fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
                 if (location != null) {
                     double lat = location.getLatitude();

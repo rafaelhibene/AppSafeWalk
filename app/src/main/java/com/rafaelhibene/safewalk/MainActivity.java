@@ -37,25 +37,29 @@ import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    //constantes globais
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private static final String TAG = "MainActivity";
 
+    //declaracoes
     BottomNavigationView bottomNavigationView;
     GoogleMap mMap;
+    //cliente para acessar a loc
     FusedLocationProviderClient fusedLocationClient;
+    // controle de permissao
     private boolean locationPermissionGranted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        //Menu - linka e define item atual
         bottomNavigationView = findViewById(R.id.bnv_bottom);
         bottomNavigationView.setSelectedItemId(R.id.tab_home);
 
@@ -73,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return false;
         });
 
-        // Inicializa Places API
+        // Inicializa Places API com a chave que coloquei no manifest
         try {
             ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
             String apiKey = ai.metaData.getString("com.google.android.libraries.places.API_KEY");
@@ -100,9 +104,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             autocompleteFragment.getView().post(() -> {
                 try {
                     EditText etPlace = autocompleteFragment.getView().findViewById(com.google.android.libraries.places.R.id.places_autocomplete_search_input);
-                    etPlace.setTextSize(18); // Ajuste o tamanho aqui (em sp)
+                    etPlace.setTextSize(18); // Ajusta o tamanho do "hint"
                     etPlace.setBackgroundResource(R.drawable.autocomplete_background); // Aplica borda
-                    // Opcional: ajustar padding horizontal para ficar melhor visualmente
                     int paddingVertical = etPlace.getPaddingTop();
                     etPlace.setPadding(40, paddingVertical, 40, paddingVertical);
                 } catch (Exception e) {
@@ -110,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
 
-
+            //listener de selecao do local no campo de busca
             autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
                 @Override
                 public void onPlaceSelected(@NonNull Place place) {
@@ -131,6 +134,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                             //move a camera ao ponto de partida
                                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(origem, 15));
+                                            // tenta pegar a chave da api e tracar a rota
                                             try {
                                                 ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
                                                 String apiKey = ai.metaData.getString("com.google.android.geo.API_KEY");
@@ -156,17 +160,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             });
         }
 
+        //inicializa o cliente da loc
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        //inicializa o mapa
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapa);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
 
+        //checa se tem permissao de loc
         checkLocationPermission();
     }
 
+    //verifica e solicita permissao de loc
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -178,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    //call back do mapa pronto
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
@@ -185,12 +194,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (locationPermissionGranted) {
             enableMyLocation();
         } else {
+            // se tiver sem a permissao mostra uma loc padrao, (brasilia)
             LatLng fallback = new LatLng(-15.793889, -47.882778);
             mMap.addMarker(new MarkerOptions().position(fallback).title("Localização padrão"));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(fallback, 15));
         }
     }
 
+    //ativa a loc do usuario no mapa
     private void enableMyLocation() {
         if (mMap == null) return;
 
@@ -199,11 +210,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         try {
-            mMap.setMyLocationEnabled(true);
+            mMap.setMyLocationEnabled(true); // botao minha localizacao
         } catch (SecurityException e) {
             e.printStackTrace();
         }
 
+        //pega a ultima localizacao e mostra no mapa
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
@@ -212,6 +224,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         mMap.addMarker(new MarkerOptions().position(userLatLng).title("Você está aqui"));
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15));
                     } else {
+
                         LatLng fallback = new LatLng(-15.793889, -47.882778);
                         mMap.clear();
                         mMap.addMarker(new MarkerOptions().position(fallback).title("Localização padrão"));
@@ -220,6 +233,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
     }
 
+    // resultado da solicitacao de permissao
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
@@ -233,6 +247,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (locationPermissionGranted) {
                 enableMyLocation();
             } else if (mMap != null) {
+                // sem permissao, usa loc padrao
                 LatLng fallback = new LatLng(-15.793889, -47.882778);
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions().position(fallback).title("Localização padrão"));

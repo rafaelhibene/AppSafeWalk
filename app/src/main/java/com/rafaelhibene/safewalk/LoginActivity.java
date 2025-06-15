@@ -43,7 +43,7 @@ public class LoginActivity extends AppCompatActivity {
                 String emailInserido = etEmail.getText().toString();
                 String senhaInserida = etSenha.getText().toString();
 
-                //condicionais de teste para ver se funciona
+                //condicionais do "usuario" teste para ver se funciona
                 if (emailInserido.equals("teste") && senhaInserida.equals("1234")) {
                     //chama a segunda activity
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);

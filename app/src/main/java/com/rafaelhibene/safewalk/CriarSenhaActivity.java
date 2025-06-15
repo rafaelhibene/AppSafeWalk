@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class CriarSenhaActivity extends AppCompatActivity {
 
+    //Declaracoes
     private Button btCriarSenha;
     private EditText etCriarSenha;
 
@@ -54,7 +55,9 @@ public class CriarSenhaActivity extends AppCompatActivity {
         // escuta mudanças no campo de senha
         etCriarSenha.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -65,10 +68,11 @@ public class CriarSenhaActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // ação ao clicar no botão
+        // Acao ao clicar no botão de criar senha
         btCriarSenha.setOnClickListener(view -> {
-            String senha = etCriarSenha.getText().toString();
+            String senha = etCriarSenha.getText().toString(); //pega a senha
 
+            //Verifica se a senha atende os requisitos
             if (!senhaValida(senha)) {
                 Toast.makeText(this, "A senha não atende aos requisitos.", Toast.LENGTH_SHORT).show();
                 return;

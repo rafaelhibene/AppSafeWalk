@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class CriarContaActivity extends AppCompatActivity {
 
+    //Declaracoes
     private EditText etNomeCriarConta, etSobrenomeCriarConta, etTelefoneCriarConta, etEmailCriarConta;
     private Button btCriarConta;
     private TextView tvJaTenhoUmaConta;
@@ -32,7 +33,7 @@ public class CriarContaActivity extends AppCompatActivity {
         });
 
         //ENVIAR DADOS A OUTRA ACTIVITY
-        //Pegando os dados dos EditTexts
+        //Linkando o Java no XML
         etNomeCriarConta = findViewById(R.id.et_nome_perfil);
         etSobrenomeCriarConta = findViewById(R.id.et_sobrenome_perfil);
         etTelefoneCriarConta = findViewById(R.id.et_telefone_perfil);
@@ -41,7 +42,7 @@ public class CriarContaActivity extends AppCompatActivity {
         //Linkando o botao
         btCriarConta = findViewById(R.id.bt_criar_conta);
 
-
+        // Acoes do botao de criar conta
         btCriarConta.setOnClickListener(view -> {
             //atribui o texto do ET à uma variável
             String nomeCriarConta = etNomeCriarConta.getText().toString().trim();
