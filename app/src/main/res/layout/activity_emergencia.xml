@@ -65,12 +65,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="48dp"
-                android:layout_marginBottom="50dp"
+                android:layout_marginBottom="12dp"
                 android:hint="Ex: 5511999999999"
                 android:inputType="phone"
                 android:background="@drawable/edittext_background"
                 android:padding="12dp"
                 android:textSize="16sp" />
+
+            <!-- Botão salvar número -->
+            <Button
+                android:id="@+id/bt_salvar_numero"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="50dp"
+                android:backgroundTint="#0F2F10"
+                android:text="Salvar Número"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textAllCaps="false" />
 
             <!-- Dicas de Segurança -->
             <TextView

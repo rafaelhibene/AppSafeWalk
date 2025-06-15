@@ -2,6 +2,7 @@ package com.rafaelhibene.safewalk;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -31,9 +32,14 @@ public class EmergenciaActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
 
     // componentes
-    private Button btEmergencia, btEnviarLocalizacao;
+    private Button btEmergencia, btEnviarLocalizacao, btSalvarNumero;
     private EditText etNumero;
     private BottomNavigationView bottomNavigationView;
+
+    // SharedPreferences
+    private SharedPreferences sharedPreferences;
+    private static final String PREFS_NAME = "SafeWalkPrefs";
+    private static final String KEY_NUMERO = "numero_contato";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,8 +57,16 @@ public class EmergenciaActivity extends AppCompatActivity {
         // link do xml
         btEmergencia = findViewById(R.id.bt_emergencia);
         btEnviarLocalizacao = findViewById(R.id.bt_enviar_localizacao);
+        btSalvarNumero = findViewById(R.id.bt_salvar_numero);  // Novo botão
         bottomNavigationView = findViewById(R.id.bnv_bottom);
         etNumero = findViewById(R.id.et_numero);
+
+        // Inicializa SharedPreferences
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
+        // Carrega número salvo, se houver
+        String numeroSalvo = sharedPreferences.getString(KEY_NUMERO, "");
+        etNumero.setText(numeroSalvo);
 
         // configura botão de emergência para abrir discador com número 190
         btEmergencia.setOnClickListener(v -> {
@@ -63,6 +77,17 @@ public class EmergenciaActivity extends AppCompatActivity {
 
         // configura botão para enviar localização via WhatsApp
         btEnviarLocalizacao.setOnClickListener(v -> enviarLocalizacaoWhatsApp());
+
+        // configura botão para salvar o número no SharedPreferences
+        btSalvarNumero.setOnClickListener(v -> {
+            String numeroParaSalvar = etNumero.getText().toString().trim();
+            if (numeroParaSalvar.isEmpty()) {
+                Toast.makeText(this, "Por favor, digite um número para salvar.", Toast.LENGTH_SHORT).show();
+            } else {
+                sharedPreferences.edit().putString(KEY_NUMERO, numeroParaSalvar).apply();
+                Toast.makeText(this, "Número salvo com sucesso!", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         // Menu
         bottomNavigationView.setSelectedItemId(R.id.tab_emergencia);
@@ -81,6 +106,8 @@ public class EmergenciaActivity extends AppCompatActivity {
             return false;
         });
     }
+
+    // O resto do código permanece igual, sem alterações
 
     /**
      * Envia a localização atual via WhatsApp para o contato informado pelo usuário.

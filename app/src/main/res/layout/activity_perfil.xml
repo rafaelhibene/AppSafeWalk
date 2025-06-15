@@ -131,6 +131,17 @@
                     android:inputType="textEmailAddress"
                     android:padding="12dp"
                     android:textColor="#000000" />
+
+                <!-- Botão Salvar -->
+                <Button
+                    android:id="@+id/bt_salvar_perfil"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Salvar Alterações"
+                    android:layout_marginTop="16dp"
+                    android:backgroundTint="#838383"
+                    android:textColor="@android:color/white" />
+
             </LinearLayout>
 
         </LinearLayout>
