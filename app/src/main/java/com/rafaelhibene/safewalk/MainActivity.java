@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,9 +31,9 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.rafaelhibene.safewalk.helpers.DirectionHelper;
 
 import java.util.Arrays;
-import android.os.Bundle;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -72,26 +73,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return false;
         });
 
-        // Inicializa Places API com a chave vinda do AndroidManifest.xml
+        // Inicializa Places API
         try {
             ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = ai.metaData;
-            String apiKey = bundle.getString("com.google.android.libraries.places.API_KEY");
-
-            if (apiKey == null) {
-                throw new IllegalStateException("API key not found in AndroidManifest.xml");
-            }
-
-            if (!Places.isInitialized()) {
+            String apiKey = ai.metaData.getString("com.google.android.libraries.places.API_KEY");
+            if (apiKey != null && !Places.isInitialized()) {
                 Places.initialize(getApplicationContext(), apiKey);
             }
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-            Log.e(TAG, "Erro ao obter API Key do meta-data", e);
-            Toast.makeText(this, "Erro ao inicializar Places API", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Erro ao inicializar Places API", e);
         }
 
-        // Configura AutocompleteSupportFragment
+        // Configura o Autocomplete
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete);
 
@@ -101,27 +94,64 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Place.Field.NAME,
                     Place.Field.LAT_LNG,
                     Place.Field.ADDRESS));
-
             autocompleteFragment.setHint("Digite o endereço de destino");
+
+            // Ajusta tamanho da fonte e adiciona borda cinza ao redor do campo de busca
+            autocompleteFragment.getView().post(() -> {
+                try {
+                    EditText etPlace = autocompleteFragment.getView().findViewById(com.google.android.libraries.places.R.id.places_autocomplete_search_input);
+                    etPlace.setTextSize(18); // Ajuste o tamanho aqui (em sp)
+                    etPlace.setBackgroundResource(R.drawable.autocomplete_background); // Aplica borda
+                    // Opcional: ajustar padding horizontal para ficar melhor visualmente
+                    int paddingVertical = etPlace.getPaddingTop();
+                    etPlace.setPadding(40, paddingVertical, 40, paddingVertical);
+                } catch (Exception e) {
+                    Log.e(TAG, "Erro ao ajustar tamanho da fonte e borda do campo de busca", e);
+                }
+            });
+
 
             autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
                 @Override
                 public void onPlaceSelected(@NonNull Place place) {
-                    Log.i(TAG, "Place selected: " + place.getName() + ", " + place.getId());
-
                     if (place.getLatLng() != null && mMap != null) {
                         mMap.clear();
                         mMap.addMarker(new MarkerOptions()
                                 .position(place.getLatLng())
                                 .title(place.getName()));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15));
+
+
+                        // Verifica a permissão antes de acessar a localização
+                        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                            fusedLocationClient.getLastLocation()
+                                    .addOnSuccessListener(location -> {
+                                        if (location != null) {
+                                            LatLng origem = new LatLng(location.getLatitude(), location.getLongitude());
+                                            LatLng destino = place.getLatLng();
+
+                                            //move a camera ao ponto de partida
+                                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(origem, 15));
+                                            try {
+                                                ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
+                                                String apiKey = ai.metaData.getString("com.google.android.geo.API_KEY");
+                                                DirectionHelper.drawRoute(mMap, origem, destino, apiKey);
+                                            } catch (PackageManager.NameNotFoundException e) {
+                                                Log.e(TAG, "Erro ao obter API Key", e);
+                                            }
+                                        } else {
+                                            Toast.makeText(MainActivity.this, "Localização atual não encontrada", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        } else {
+                            Toast.makeText(MainActivity.this, "Permissão de localização não concedida", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
 
                 @Override
                 public void onError(@NonNull com.google.android.gms.common.api.Status status) {
-                    Log.e(TAG, "Error selecting place: " + status.getStatusMessage());
-                    Toast.makeText(MainActivity.this, "Erro ao selecionar endereço: " + status.getStatusMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Erro ao selecionar local: " + status.getStatusMessage());
+                    Toast.makeText(MainActivity.this, "Erro ao selecionar local", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -155,9 +185,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (locationPermissionGranted) {
             enableMyLocation();
         } else {
-            LatLng brasilia = new LatLng(-15.793889, -47.882778);
-            mMap.addMarker(new MarkerOptions().position(brasilia).title("Você está aqui"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(brasilia, 15));
+            LatLng fallback = new LatLng(-15.793889, -47.882778);
+            mMap.addMarker(new MarkerOptions().position(fallback).title("Localização padrão"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(fallback, 15));
         }
     }
 
@@ -172,7 +202,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.setMyLocationEnabled(true);
         } catch (SecurityException e) {
             e.printStackTrace();
-            return;
         }
 
         fusedLocationClient.getLastLocation()
@@ -183,10 +212,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         mMap.addMarker(new MarkerOptions().position(userLatLng).title("Você está aqui"));
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15));
                     } else {
-                        LatLng brasilia = new LatLng(-15.793889, -47.882778);
+                        LatLng fallback = new LatLng(-15.793889, -47.882778);
                         mMap.clear();
-                        mMap.addMarker(new MarkerOptions().position(brasilia).title("Você está aqui"));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(brasilia, 15));
+                        mMap.addMarker(new MarkerOptions().position(fallback).title("Localização padrão"));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(fallback, 15));
                     }
                 });
     }
@@ -198,18 +227,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            locationPermissionGranted = grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            locationPermissionGranted = grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
             if (locationPermissionGranted) {
                 enableMyLocation();
-            } else {
-                if (mMap != null) {
-                    LatLng brasilia = new LatLng(-15.793889, -47.882778);
-                    mMap.clear();
-                    mMap.addMarker(new MarkerOptions().position(brasilia).title("Você está aqui"));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(brasilia, 15));
-                }
+            } else if (mMap != null) {
+                LatLng fallback = new LatLng(-15.793889, -47.882778);
+                mMap.clear();
+                mMap.addMarker(new MarkerOptions().position(fallback).title("Localização padrão"));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(fallback, 15));
             }
         }
     }
